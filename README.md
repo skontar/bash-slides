@@ -19,6 +19,7 @@ Required dependencies:
 Optional dependencies:
 * unclutter (for hiding mouse cursor during presentation)
 * Imagemagick (for export to PDF)
+* Xorg (for export to PDF)
 * FontAwesome (for nice icons in text)
 
 On Fedora, just run the following:
@@ -43,11 +44,21 @@ For running your own slides, use the following:
 $ ./slides my-directory-with-slides
 ```
 
+
+## Export to PDF
+
+This feature is one big hack.
+It only works in X server, not Wayland.
+It finds your active window (with a bit of luck it is the terminal emulator window). 
+It makes a screenshot of it as PNG, then it moves to the next slide.
+In the end it stitches all screenshots in one PDF.
+
+
 ## Tips
 
 * Enlarge your font as much as you can, `slides` will warn you if it will not fit.
 * When playing with font size, you can use `R` key to reload slides.
-* When printing slides to PDF, use your terminal in full screen with the biggest font
+* When exporting slides to PDF, use your terminal in full screen with the biggest font
 
 
 ## Testing
