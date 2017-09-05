@@ -20,11 +20,12 @@ Optional dependencies:
 * unclutter (for hiding mouse cursor during presentation)
 * Imagemagick (for export to PDF)
 * Xorg (for export to PDF)
+* xprop (for export to PDF)
 * FontAwesome (for nice icons in text)
 
 On Fedora, just run the following:
 ```
-# dnf install highlight unclutter ImageMagick fontawesome-fonts
+# dnf install highlight unclutter ImageMagick xorg-x11-utils fontawesome-fonts 
 ```
 
 ## Usage
