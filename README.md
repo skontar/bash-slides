@@ -1,6 +1,7 @@
 # Bash Slides
 
 This is a simple script written in Bash for slide presentations in terminal.
+
 It is inspired by https://github.com/fxn/tkn.
 
 **It requires terminal which supports 256 colors and formatting.** 
@@ -34,7 +35,7 @@ $ ./slides
 ```
 
 The example slides is a showcase of capabilities and contains slide about  controls. 
-You can also see generated PDF.
+You can also open generated PDF of the example slides.
 
 For running your own slides, use the following:
 
