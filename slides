@@ -356,7 +356,7 @@ while true; do
             echo "ImageMagick is required, but not installed. Export to PDF disabled."
             sleep 2
         # Check if xprop is installed
-        elif ! command -v import &> /dev/null && ! command -v convert &> /dev/null; then
+        elif ! command -v xprop &> /dev/null; then
             echo "'xprop' is required, but not installed. Export to PDF disabled."
             sleep 2
         else
