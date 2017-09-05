@@ -1,0 +1,10 @@
+code bash
+
+# Uses `highlight` for code highlighting
+
+for (( i = 0; i < nr_lines; i++ )); do
+    for (( j = 0; j < filler; j++ )); do
+        printf " "
+    done
+    echo -e "${lines[i]}"
+done
