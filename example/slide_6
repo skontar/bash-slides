@@ -2,10 +2,10 @@ block
 
 Very easy to control:
 
-• <b>🡒 , k, Space, Enter, Page Down<r> – Next slide
-• <b>🡐 , j, Backspace, Page Up<r> – Previous slide
-• <b>🡑, Home<r> – First slide
-• <b>🡓, End<r> – Last slide
+• <b>→, k, Space, Enter, Page Down<r> – Next slide
+• <b>←, j, Backspace, Page Up<r> – Previous slide
+• <b>↑, Home<r> – First slide
+• <b>↓, End<r> – Last slide
 • <b>b<r> – Blank / restore screen
 • <b>s<r> – Show / hide status line
 • <b>r<r> – Reload slides
