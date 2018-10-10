@@ -1,0 +1,89 @@
+center =================================================================
+
+ ___          _      ___ _ _    _        
+| _ ) __ _ __| |_   / __| (_)__| |___ ___
+| _ \/ _` (_-< ' \  \__ \ | / _` / -_|_-<
+|___/\__,_/__/_||_| |___/_|_\__,_\___/__/
+
+
+<b>Stanislav Kontár<r>
+
+2018
+
+center =================================================================
+<u>Basic slide show for terminal<r>
+
+<b><i>Written in Bash!<r>
+
+Needs modern terminal emulator with
+support for ANSI escape sequences
+and 256 colors
+
+center =================================================================
+<b>Supports<r> <u>some<r> <i>basic<r> <b><i>formatting<r>...
+
+...<R>a<r> <G>few<r> <Y>nice<r> <V>and<r> <E>fancy<r> <B>colors<r>...
+
+...and <s> Export to PDF <r> using ImageMagick.
+
+If 'unclutter' is installed, 
+it also hides mouse cursor.
+
+block ==================================================================
+Supported slide styles are:
+
+• <b>Block<r> – No alignment, centered block
+• <b>Center<r> – Every line aligned to center
+• <b>Code<r> – Highlighted code
+• <b>Section<r> – Chapter / section division slide
+
+code bash ==============================================================
+# Uses `highlight` for code highlighting
+
+for (( i = 0; i < nr_lines; i++ )); do
+    for (( j = 0; j < filler; j++ )); do
+        printf " "
+    done
+    echo -e "${lines[i]}"
+done
+
+block ==================================================================
+Very easy to control:
+
+• <b>→, k, Space, Enter, Page Down<r> – Next slide
+• <b>←, j, Backspace, Page Up<r> – Previous slide
+• <b>↑, Home<r> – First slide
+• <b>↓, End<r> – Last slide
+• <b>b<r> – Blank / restore screen
+• <b>s<r> – Show / hide status line
+• <b>r<r> – Reload slides
+• <b>p<r> – Export to PDF
+• <b>Esc, q<r> – Quit
+
+block ==================================================================
+More fun is possible with Unicode and
+ASCII art ¯\_(ツ)_/¯
+
+     ┌───────────┐   ╔═══════════╗
+     │  Tables   │   ║  Tables   ║
+     ├─────┬─────┤   ╠═════╦═════╣
+     │ ONE │ TWO │   ║ ONE ║ TWO ║
+     └─────┴─────┘   ╚═════╩═════╝
+
+ Few missing lines: ╡╢╖╕╜╛┼╞╟╬╧╨╤╥╙╘╒╓╫╪
+
+ Also not to forget FontAwesome!   
+
+block ==================================================================
+`figlet` and `showfigfonts` are good commands
+to create a nice looking ASCII art headings.
+
+   ___           __     ___________      __
+  / _ )___ ____ / /    / __/_  __/ | /| / /
+ / _  / _ `(_-</ _ \  / _/  / /  | |/ |/ / 
+/____/\_,_/___/_//_/ /_/   /_/   |__/|__/ 
+
+<G>$<r> figlet -f smslant    <G>$<r> figlet -f small
+
+section ================================================================
+That's all folks!

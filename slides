@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2017 Stanislav Kontar
+# Copyright (c) 2018 Stanislav Kontar
 # License: MIT
 #
 # Inspired by https://github.com/fxn/tkn
@@ -10,23 +10,25 @@ SECTION_DECORATION=" ❧❦☙ "
 LEN_DECORATION="${#SECTION_DECORATION}"
 
 FORMATTING=(
-    "<b>" $( tput bold )
-    "<s>" $( tput smso )
-    "<i>" $( tput sitm )
-    "<u>" $( tput smul )
-    "<r>" $( tput sgr0 )
-    "<R>" $( tput setaf 196 )
-    "<G>" $( tput setaf 82 )
-    "<B>" $( tput setaf 39 )
-    "<Y>" $( tput setaf 226 )
-    "<V>" $( tput setaf 129 )
-    "<E>" $( tput setaf 248 )
+    "<b>" "$( tput bold )"
+    "<s>" "$( tput smso )"
+    "<i>" "$( tput sitm )"
+    "<u>" "$( tput smul )"
+    "<r>" "$( tput sgr0 )"
+    "<R>" "$( tput setaf 196 )"
+    "<G>" "$( tput setaf 82 )"
+    "<B>" "$( tput setaf 39 )"
+    "<Y>" "$( tput setaf 226 )"
+    "<V>" "$( tput setaf 129 )"
+    "<E>" "$( tput setaf 248 )"
 )
 NR_FORMATTING="${#FORMATTING[@]}"
 for (( i = 0; i < NR_FORMATTING; i += 2 )); do
     SED_DELETE+=" -e s/${FORMATTING[i]}//g"
     SED_REPLACE+=" -e s/${FORMATTING[i]}/${FORMATTING[i + 1]}/g"
 done
+
+file="${1:-example}"
 
 
 prepare_terminal() {
@@ -41,76 +43,142 @@ prepare_terminal() {
 restore_terminal() {
     # Clean terminal and show cursor again
     tput clear
-    tput cnorm  
+    tput cnorm
+}
+
+
+read_slides() {
+    local i=0
+
+    slides=0  # slides are indexed starting with 1
+    slide_starts=()
+    slide_lengths=()
+    slide_raw_lines=()
+    slide_clean_lines=()
+    slide_formatted_lines=()
+
+    prepare_terminal
+
+    readarray -t slide_raw_lines < "$file"
+    readarray -t slide_clean_lines <<< "$( sed ${SED_DELETE} "$file" )"
+    readarray -t slide_formatted_lines <<< "$( sed ${SED_REPLACE} "$file" )"
+
+    while IFS='' read -r line; do
+        if [[ "$line" =~ ={40,} ]]; then
+            (( slides++ ))
+            slide_formats[slides]="$( sed -r -n 's/([a-zA-Z ]*[a-zA-Z])[[:space:]]*={40,}.*$/\1/p' <<< "$line" )"
+            slide_starts[slides]="$(( i + 1 ))"
+            slide_lengths[slides]=0
+        else
+            (( slide_lengths[slides]++ ))
+        fi
+        (( i++ ))
+    done < "$file"
+
+    # Remove empty lines at the end of the slide
+    for (( i = 1; i <= slides; i++ )); do
+        (( start = slide_starts[i] ))
+        (( length = slide_lengths[i] ))
+        while [[ "${slide_raw_lines[start + length - 1]}" == "" ]]; do
+            (( slide_lengths[i]-- ))
+            (( length = slide_lengths[i] ))
+        done
+    done
+}
+
+
+check_slides() {
+    local i
+    local j
+
+    for (( i = 1; i <= slides; i++ )); do
+        (( start = slide_starts[i] ))
+        (( length = slide_lengths[i] ))
+
+        # Check if slide fits in the terminal
+        if (( length > rows - 2 )); then
+            echo "Slide $i too tall."
+            return 1
+        fi
+        for (( j = start; j < start + length; j++  )); do
+            if (( ${#slide_clean_lines[j]} > columns - 4 )); then
+                echo "Slide $i too wide."
+                return 1
+            fi
+        done
+    done
+    return 0
 }
 
 
 show_slide() {
     local i
+
     prepare_terminal
-    
+
+    start="${slide_starts[slide]}"
+    length="${slide_lengths[slide]}"
+    format="${slide_formats[slide]}"
+
     # Compute vertical padding
-    lines_padding=$(( (rows - nr_lines) / 2 ))
-    (( (rows - nr_lines) % 2 && lines_padding++ ))  # Round up
-    
+    lines_padding=$(( (rows - length + 1) / 2 ))  # Add 1 to round up
+
     # Center slide type
     if [[ "$format" == "center" ]]; then
         for (( i = 0; i < lines_padding; i++ )); do
-            echo 
+            echo
         done
-        
-        for (( i = 0; i < nr_lines; i++ )); do
+
+        for (( i = start; i < start + length; i++ )); do
             # Compute horizontal padding for every line
-            filler=$(( (columns - ${#clear_lines[i]} ) / 2 ))
-            (( (columns - ${#clear_lines[i]} ) % 2 && filler++ ))  # Round up
+            filler=$(( (columns - ${#slide_clean_lines[i]} + 1) / 2 ))  # Add 1 to round up
 
             printf "%${filler}s" " "
-            echo -e "${lines[i]}"
+            echo -e "${slide_formatted_lines[i]}"
         done
-        
+
     # Block slide type
     elif [[ "$format" == "block" ]]; then
         for (( i = 0; i < lines_padding; i++ )); do
             echo
         done
-        
-        # Compute horizontal paddig for whole block
+
+        # Compute horizontal padding for whole block
         longest=0
-        for (( i = 0; i < nr_lines; i++ )); do
-            if (( ${#clear_lines[i]} > longest )); then
-                longest=${#clear_lines[i]}
+        for (( i = start; i < start + length; i++ )); do
+            if (( ${#slide_clean_lines[i]} > longest )); then
+                longest=${#slide_clean_lines[i]}
             fi
         done
-        filler=$(( (columns - longest) / 2 ))
-        (( (columns - longest) % 2 && filler++ ))  # Round up
-        
-        for (( i = 0; i < nr_lines; i++ )); do
+        filler=$(( (columns - longest + 1) / 2 ))  # Add 1 to round up
+
+        for (( i = start; i < start + length; i++ )); do
             printf "%${filler}s" " "
-            echo -e "${lines[i]}"
+            echo -e "${slide_formatted_lines[i]}"
         done
 
     # Code slide type
     elif [[ "$format" =~ code ]]; then
+        code=$( sed -r -n 's/^code[[:space:]]+(.*)$/\1/p' <<< "$format" )
         # Perform code formatting
-        text=$( local IFS=$'\n'; echo "${raw_lines[*]}"; )
+        text=$( for (( i = start; i < start + length; i++  )); do echo -e "${slide_raw_lines[i]}"; done )
         formatted_text=$( highlight -S "$code" -s "$CODE_STYLE" -O xterm256 <<< "$text" )
         readarray -t formatted_lines <<< "$formatted_text"
 
         for (( i = 0; i < lines_padding; i++ )); do
             echo
         done
-        
-        # Compute horizontal paddig for whole code block
+
+        # Compute horizontal padding for whole code block
         longest=0
-        for (( i = 0; i < nr_lines; i++ )); do
-            if (( ${#raw_lines[i]} > longest )); then
-                longest=${#raw_lines[i]}
+        for (( i = start; i < start + length; i++ )); do
+            if (( ${#slide_raw_lines[i]} > longest )); then
+                longest=${#slide_raw_lines[i]}
             fi
         done
-        filler=$(( (columns - longest) / 2 ))
-        (( (columns - longest) % 2 && filler++ ))  # Round up
-        
-        for (( i = 0; i < nr_lines; i++ )); do
+        filler=$(( (columns - longest + 1) / 2 ))  # Add 1 to round up
+
+        for (( i = 0; i < length; i++ )); do
             printf "%${filler}s" " "
             echo -e "${formatted_lines[i]}"
         done
@@ -119,20 +187,18 @@ show_slide() {
     elif [[ "$format" == "section" ]]; then
         # Shorter vertical padding because of decorations
         for (( i = 0; i < lines_padding - 2; i++ )); do
-            echo 
+            echo
         done
 
         # Compute horizontal decoration padding
         longest=0
-        for (( i = 0; i < nr_lines; i++ )); do
-            if (( ${#clear_lines[i]} > longest )); then
-                longest=${#clear_lines[i]}
+        for (( i = start; i < start + length; i++ )); do
+            if (( ${#slide_clean_lines[i]} > longest )); then
+                longest=${#slide_clean_lines[i]}
             fi
         done
-        line_filler=$(( (columns - longest) / 2 - 1 ))
-        (( (columns - longest) % 2 && line_filler++ ))  # Round up
-        line_length=$(( (longest - LEN_DECORATION) / 2 + 1 ))
-        (( (longest - LEN_DECORATION) % 2 && line_length++ ))  # Round up
+        line_filler=$(( (columns - longest + 1) / 2 - 1 ))  # Add 1 to round up
+        line_length=$(( (longest - LEN_DECORATION + 1) / 2 + 1 ))  # Add 1 to round up
 
         # Upper decoration
         printf "%${line_filler}s" " "
@@ -146,19 +212,18 @@ show_slide() {
         echo
         echo
 
-        for (( i = 0; i < nr_lines; i++ )); do
+        for (( i = start; i < start + length; i++ )); do
             # Compute horizontal padding for every line
-            filler=$(( (columns - ${#clear_lines[i]}) / 2 ))
-            (( (columns - ${#clear_lines[i]}) % 2 && filler++ ))  # Round up
+            filler=$(( (columns - ${#slide_clean_lines[i]} + 1) / 2 ))  # Add 1 to round up
             # Also need to move one char right if line is one character longer
-            (( (longest - LEN_DECORATION) % 2 && filler++ ))  
-            
+            (( (longest - LEN_DECORATION) % 2 && filler++ ))
+
             printf "%${filler}s" " "
-            echo -e "${lines[i]}"
+            echo -e "${slide_formatted_lines[i]}"
         done
 
         # Lower decoration
-        echo       
+        echo
         printf "%${line_filler}s" " "
         for (( i = 0; i < line_length; i++ )); do
             printf "─"
@@ -167,110 +232,36 @@ show_slide() {
         for (( i = 0; i < line_length; i++ )); do
             printf "─"
         done
-        
-    # Unknown slide type
-    else
-        for (( i = 0; i < nr_lines; i++ )); do
-            echo -e "${lines[i]}"
-        done
     fi
-}
-
-
-load_slide() {
-    n="$1"
-    slide_file="${slides[n]}"
-    filename="${slide_file##*/}"
-    
-    format=$( head -n 1 "$slide_file" )
-    raw_text=$( tail -n +3 "$slide_file" )
-    
-    if [[ "$format" =~ code ]]; then
-        # Get highlighting type
-        code=$( sed -r -n 's/^code[[:space:]]+(.*)$/\1/p' <<< "$format" )
-    else
-        # Apply formatting
-        clear_text=$( sed $SED_DELETE <<< "$raw_text" )
-        text=$( sed $SED_REPLACE <<< "$raw_text" )
-    fi
-    
-    readarray -t raw_lines <<< "$raw_text"
-    readarray -t clear_lines <<< "$clear_text"
-    readarray -t lines <<< "$text"
-    
-    nr_lines=${#raw_lines[@]}    
-    # Ignore empty lines at the end of the slide
-    while [[ "${raw_lines[nr_lines - 1]}" == "" ]] && (( nr_lines > 0 )); do
-        (( nr_lines-- ))
-    done   
-}
-
-
-check_slide() {
-    local i
-    # Check if slide fits in the terminal
-    if (( nr_lines > rows - 2 )); then
-        echo "Slide '$slide_file' too tall."
-        return 1
-    fi
-    for (( i = 0; i < nr_lines; i++ )); do
-        if (( ${#clear_lines[i]} > columns - 4 )); then
-            echo "Slide '$slide_file' too wide."
-            return 1
-        fi
-    done
-    return 0
-}
-
-
-read_slides() {
-    local i
-    prepare_terminal
-    
-    # Prepare list of slides
-    directory="${1:-example}"
-    directory="${directory%%/}"
-    i=0
-    for file in ${directory}/slide_*; do
-        slides[i++]="$file"
-    done
-    nr_slides="${#slides[@]}"
-    
-    # Check if all slides will fit in the terminal
-    for (( i = 0; i < nr_slides; i++ )); do
-        load_slide "$i"
-        if ! check_slide; then
-            return 1
-        fi
-    done
-    return 0
 }
 
 
 show_status() {
     local i
-    skip=$(( rows - nr_lines - lines_padding - 1 ))
+
+    skip=$(( rows - length - lines_padding - 1 ))
     if [[ "$format" == "section" ]]; then
         (( skip-- ))
     fi
     for (( i = 0; i < skip; i++ )); do
         echo
     done
-    status_slide="$(( slide + 1 ))/$nr_slides [$filename]"
+    status_slide="$slide/$slides [$file]"
     status_time=$( date +"%-k:%M" )
     status_filler=$(( columns - ${#status_slide} - ${#status_time} - 2 ))
     printf " %s%s%${status_filler}s%s%s" "$( tput setaf 240 )" "$status_slide" " " "$status_time" "$( tput sgr0 )"
 }
 
+
 hide_mouse_cursor() {
-    if [[ "$unclutter_installed" ]]; then
+    if (( unclutter_installed )); then
         unclutter -idle 1 &
         PID="$!"
     fi
 }
 
 show_mouse_cursor() {
-    if [[ "$unclutter_installed" ]]; then
+    if (( unclutter_installed )); then
         kill "$PID"
         sleep 0.1
     fi
@@ -285,46 +276,48 @@ fi
 
 # Check if unclutter is installed
 if command -v unclutter &> /dev/null; then
-    unclutter_installed=true
+    unclutter_installed=1
+else
+    unclutter_installed=0
 fi
 
-slide=0  # Current slide
+slide=1  # Current slide
 status=0  # Status line
-read_slides "$1"
+read_slides
+check_slides
 should_show="!$?"
 
 hide_mouse_cursor
 
 while true; do
     # Do not allow current slide number outside bounds
-    (( slide < 0 )) && slide=0
-    (( slide >= nr_slides )) && slide=$(( nr_slides - 1 ))
+    (( slide < 1 )) && (( slide = 1 ))
+    (( slide > slides )) && (( slide = slides ))
 
     # Only show slide if checks passed
     if (( should_show )); then
-        load_slide "$slide"
         show_slide
         if (( status )); then
             show_status
         fi
     fi
-    
+
     # Read just one key press
     read -rsn1 response
-    
+
     # Handle arrows, Page Up, Page Down, Home, End, and ESC
     if [[ "$response" == $'\x1b' ]]; then
-        read -rsn1 -t 0.1 response
+        read -rsn1 -t "0.1" response
         if [[ "$response" == "[" ]]; then
-            read -rsn1 -t 0.1 response
+            read -rsn1 -t "0.1" response
             if [[ "$response" == "D" || "$response" == "5" ]]; then
                 (( slide-- ))
             elif [[ "$response" == "C" || "$response" == "6" ]]; then
                 (( slide++ ))
             elif [[ "$response" == "A" || "$response" == "H"  ]]; then
-                (( slide = 0 ))
+                (( slide = 1 ))
             elif [[ "$response" == "B" || "$response" == "F" ]]; then
-                (( slide = nr_slides - 1 ))
+                (( slide = slides ))
             fi
         else
             break
@@ -337,7 +330,8 @@ while true; do
         (( slide-- ))
     # R
     elif [[ "$response" == "r" ]]; then
-        read_slides "$1"
+        read_slides
+        check_slides
         should_show="!$?"
     # B
     elif [[ "$response" == "b" ]]; then
@@ -350,7 +344,7 @@ while true; do
     elif [[ "$response" == "q" ]]; then
         break
     # P
-    elif [[ "$response" == "p" ]]; then   
+    elif [[ "$response" == "p" ]]; then
         # Check if ImageMagick is installed
         if ! command -v import &> /dev/null && ! command -v convert &> /dev/null; then
             echo "ImageMagick is required, but not installed. Export to PDF disabled."
@@ -360,15 +354,15 @@ while true; do
             echo "'xprop' is required, but not installed. Export to PDF disabled."
             sleep 2
         else
+            rm -rf export
             mkdir -p export
-            active_window=$( xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2 ) 
-            for (( i = 0; i < nr_slides; i++ )); do
-                load_slide "$i"
+            active_window=$( xprop -root 32x '\t$0' _NET_ACTIVE_WINDOW | cut -f 2 )
+            for (( slide = 1; slide <= slides; slide++ )); do
                 show_slide
                 sleep 0.1
-                import -window "$active_window" "export/${filename}.png"
+                import -window "$active_window" "export/$( printf "%04d" "$slide" ).png"
             done
-            convert "export/*.png" "${directory}.pdf"
+            convert "export/*.png" "${file}.pdf"
             restore_terminal
             break
         fi

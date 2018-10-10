@@ -1,9 +1,0 @@
-center
-
-<u>Basic slide show for terminal<r>
-
-<b><i>Written in Bash!<r>
-
-Needs modern terminal emulator with
-support for ANSI escape sequences
-and 256 colors

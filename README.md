@@ -42,7 +42,7 @@ You can also open generated PDF of the example slides.
 For running your own slides, use the following:
 
 ```
-$ ./slides my-directory-with-slides
+$ ./slides my-slide-deck-file
 ```
 
 
@@ -64,26 +64,25 @@ In the end it stitches all screenshots in one PDF.
 
 ## Testing
 
-Tested on Fedora 25 in `xfce4-terminal`.
+Tested on Fedora 28 in `xfce4-terminal`.
 
 
 ## Example presentation
 
-![Slide 1](./export/slide_1.png)
+![Slide 1](./export/slide_0001.png)
 
-![Slide 2](./export/slide_2.png)
+![Slide 2](./export/slide_0002.png)
 
-![Slide 3](./export/slide_3.png)
+![Slide 3](./export/slide_0003.png)
 
-![Slide 4](./export/slide_4.png)
+![Slide 4](./export/slide_0004.png)
 
-![Slide 5](./export/slide_5.png)
+![Slide 5](./export/slide_0005.png)
 
-![Slide 6](./export/slide_6.png)
+![Slide 6](./export/slide_0006.png)
 
-![Slide 7](./export/slide_7.png)
+![Slide 7](./export/slide_0007.png)
 
-![Slide 8](./export/slide_8.png)
+![Slide 8](./export/slide_0008.png)
 
-![Slide 9](./export/slide_9.png)
-
+![Slide 9](./export/slide_0009.png)

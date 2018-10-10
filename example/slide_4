@@ -1,8 +1,0 @@
-block
-
-Supported slide styles are:
-
-• <b>Block<r> – No alignment, centered block
-• <b>Center<r> – Every line aligned to center
-• <b>Code<r> – Highlighted code
-• <b>Section<r> – Chapter / section division slide
