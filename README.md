@@ -69,20 +69,20 @@ Tested on Fedora 28 in `xfce4-terminal`.
 
 ## Example presentation
 
-![Slide 1](./export/slide_0001.png)
+![Slide 1](./export/0001.png)
 
-![Slide 2](./export/slide_0002.png)
+![Slide 2](./export/0002.png)
 
-![Slide 3](./export/slide_0003.png)
+![Slide 3](./export/0003.png)
 
-![Slide 4](./export/slide_0004.png)
+![Slide 4](./export/0004.png)
 
-![Slide 5](./export/slide_0005.png)
+![Slide 5](./export/0005.png)
 
-![Slide 6](./export/slide_0006.png)
+![Slide 6](./export/0006.png)
 
-![Slide 7](./export/slide_0007.png)
+![Slide 7](./export/0007.png)
 
-![Slide 8](./export/slide_0008.png)
+![Slide 8](./export/0008.png)
 
-![Slide 9](./export/slide_0009.png)
+![Slide 9](./export/0009.png)
