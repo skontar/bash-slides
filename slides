@@ -246,7 +246,7 @@ show_status() {
     for (( i = 0; i < skip; i++ )); do
         echo
     done
-    status_slide="$slide/$slides [$file]"
+    status_slide="$slide/$slides [${file##*/}]"
     status_time=$( date +"%-k:%M" )
     status_filler=$(( columns - ${#status_slide} - ${#status_time} - 2 ))
     printf " %s%s%${status_filler}s%s%s" "$( tput setaf 240 )" "$status_slide" " " "$status_time" "$( tput sgr0 )"
